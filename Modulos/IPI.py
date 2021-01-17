@@ -6,7 +6,7 @@ def Le_IPI(n,m):
     IPIs = []
     start_at = 0
     for i in range(n,m):
-        record = wfdb.rdrecord('../samplesnovos/Person_01/rec_'+str(i+1), physical=False, channel_names= ['ECG I filtered'])
+        record = wfdb.rdrecord('samplesnovos/Person_10/rec_'+str(i+1), physical=False, channel_names= ['ECG I filtered'])
         print(len(record.d_signal))
         print(record.sig_name)
         print(record.fs)  #frequencia

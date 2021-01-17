@@ -7,8 +7,12 @@ import hashlib
 
 if __name__ == "__main__":
 
+    Limite = 10
     #Sender:
-
+    IDs = random.randint(0,150)
+    IDr = random.randint(0,150)
+    while(IDr==IDs):
+        IDr = random.randint(0, 150)
     IPIs_Sender = Le_IPI(0,4)
     IPIs_Sender_Concatenados =[]
     print(len(IPIs_Sender))
@@ -35,6 +39,7 @@ if __name__ == "__main__":
     
 
     # receiver:
+    # Receiver recebe IDs,IDr,Cofre e (nonce?)
     IPIs_receiver = Le_IPI(0,4)
     IPIs_Concatenados = []
     print(len(IPIs_receiver))
@@ -59,11 +64,26 @@ if __name__ == "__main__":
         if Cofre[k] in Hashs:
             Q.append(str(k))
     print("Indices chave Q: ", Q)
+    # Forma abaixo de encontrar hash de Q pode estar errada:
     Aux = ""
     for s in Q:
-        Aux = Aux + str(hashlib.sha1(s.encode('utf-8')).hexdigest())
-    K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest())
+        Aux = Aux + str(hashlib.sha1(s.encode('utf-8')).hexdigest()) #Algoritmo concatena hash do valor de cada elemento da lista em uma variavel
+    K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
     print("Hash K :", K)
+#Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
+#Sender realizar computações
+    ContadorLimite=0
+    for i in Q:
+        if Cofre[int(i)] in CaracteristicasSender:
+            ContadorLimite+=1
+    if ContadorLimite>=Limite:
+        print("ACORDO!")
+    else:
+        print("NAO ACORDO!")
+
+
+
+
 
         
 
