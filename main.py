@@ -1,4 +1,4 @@
-#Impementação de algoritmo descrito em artigo: [17] OPFKA a Secure and Efficient Ordered-Physiological-Feature-based Key Agreement for Wireless Body Area Networks
+# Impementação de algoritmo descrito em artigo: [17] OPFKA a Secure and Efficient Ordered-Physiological-Feature-based Key Agreement for Wireless Body Area Networks
 from Modulos.IPI import Le_IPI
 from Modulos.IEEE754Converter import Converter
 from Modulos.ChaffPoints import *
@@ -59,22 +59,23 @@ if __name__ == "__main__":
     print("\nHashs: ", Hashs, " ", len(Hashs), "\n")
 
     Q = []
-
+    K = hashlib.sha1()
     for k in range(len(Cofre)):
         if Cofre[k] in Hashs:
-            Q.append(str(k))
+            Q.append(k)
+            K.update(str(k).encode('utf-8'))
     print("Indices chave Q: ", Q)
     # Forma abaixo de encontrar hash de Q pode estar errada:
-    Aux = ""
-    for s in Q:
-        Aux = Aux + str(hashlib.sha1(s.encode('utf-8')).hexdigest()) #Algoritmo concatena hash do valor de cada elemento da lista em uma variavel
-    K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
-    print("Hash K :", K)
+    # Aux = ""
+    # for s in Q:
+    #     Aux = Aux + str(hashlib.sha1(s.encode('utf-8')).hexdigest()) #Algoritmo concatena hash do valor de cada elemento da lista em uma variavel
+    # K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
+    print("Hash K :", K.hexdigest())
 #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
 #Sender realizar computações
     ContadorLimite=0
     for i in Q:
-        if Cofre[int(i)] in CaracteristicasSender:
+        if Cofre[i] in CaracteristicasSender:
             ContadorLimite+=1
     if ContadorLimite>=Limite:
         print("ACORDO!")
