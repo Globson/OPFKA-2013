@@ -1,0 +1,31 @@
+Não sei se na pratica o algoritmo OPFKA considera que diferentes sensores que concordam entre si podem ler diferentes espaços de tempos de IPIs
+            Resposta: os dois sensores coletam e processam de forma simultânea e independente um certo sinal fisiológico com base no qual alguns recursos secretos são computados
+
+Comecei a separar Sender e Receiver em arquivos .py separados, porem me dei conta que para isso é necessário utilizar orientação a objeto devido a necessidade de coexistencia  simultanea de modulos.
+
+A forma de se calcular o Hash das posições reconhecidas pelo receiver pode estar errada. Comentar
+
+Oq seria o MAC() citado no pseudocodigo do OPFKA?
+
+
+O OPFKA menciona 2 formas de processar o sinal fisiologico, o IPI e o FFT. Porem o cenario que tem menos sobrecarga de processamento em relação ao PSKA é com o IPI
+
+
+Eu comecei a realizar a comunicação entre os nós e percebi q o OPFKA precisa realizar uma leitura de sinais simultanea
+
+
+MannaSim -> UFMG
+NS-3 -> Mais utilizada
+
+Reuniao 25/1
+
+Modifiquei forma como hash de vetor de caracteristicas é calculado
+
+Penso em recomeçar td e fazer orientado a objeto
+
+O ns3 é um pacote q se instala ou um modulo que se baixa sempre q se começa um novo projeto?
+https://www.nsnam.org/docs/tutorial/html/getting-started.html#overview
+
+Reuniao
+    Ainda nao sei ao certo quais valores devem ser setados de limite, quantidade de ipis e chaffpoints
+

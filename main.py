@@ -9,19 +9,27 @@ if __name__ == "__main__":
 
     Limite = 10
     #Sender:
+    # Gerando IDs
     IDs = random.randint(0,150)
     IDr = random.randint(0,150)
     while(IDr==IDs):
         IDr = random.randint(0, 150)
+
+    
     IPIs_Sender = Le_IPI(0,4)
     IPIs_Sender_Concatenados =[]
     print(len(IPIs_Sender))
+
+    # Juntando 3 IPIs
     for i in range (0,90,3):
         Binario1 = Converter(IPIs_Sender[i])
         Binario2 = Converter(IPIs_Sender[i+1])
         Binario3 = Converter(IPIs_Sender[i+2])
         IPIs_Sender_Concatenados.append(Binario1[28:32]+Binario2[28:32]+Binario3[28:32])
+    
+
     # print(IPIs_Concatenados)
+    # Fazendo hash de cada ipi e gerando caracteristica
     CaracteristicasSender=[]
     for j in range(len(IPIs_Sender_Concatenados)):
         CaracteristicasSender.append(str(hashlib.sha1(IPIs_Sender_Concatenados[j].encode('utf-8')).hexdigest()))
@@ -29,6 +37,8 @@ if __name__ == "__main__":
         CaracteristicasSender[j]= (CaracteristicasSender[j][0:20])
         # print(Hashs[j]," ",len(Hashs[j]))
     print("\nCaracteristicas do Sender(Hashs): ",CaracteristicasSender," ",len(CaracteristicasSender),"\n")
+
+    # Gerando Chaffpoints e gerando cofre.
     chaffpoints=generateChaffPoints(CaracteristicasSender,30)
     Cofre=[]
     Cofre.extend(CaracteristicasSender)
@@ -40,9 +50,12 @@ if __name__ == "__main__":
 
     # receiver:
     # Receiver recebe IDs,IDr,Cofre e (nonce?)
+    # Realizando leitura de IPIs e calculo de caracteristicas de receiver
     IPIs_receiver = Le_IPI(0,4)
     IPIs_Concatenados = []
     print(len(IPIs_receiver))
+
+    # Juntando 3 ipis 
     for i in range(0, 90, 3):
         Binario1 = Converter(IPIs_receiver[i])
         Binario2 = Converter(IPIs_receiver[i+1])
@@ -50,6 +63,8 @@ if __name__ == "__main__":
         IPIs_Concatenados.append(
             Binario1[28:32]+Binario2[28:32]+Binario3[28:32])
     # print(IPIs_Concatenados)
+
+    # Caracteristicas do receiver (hashs de IPIs)
     Hashs = []
     for j in range(len(IPIs_Concatenados)):
         Hashs.append(str(hashlib.sha1(IPIs_Concatenados[j].encode('utf-8')).hexdigest()))
@@ -58,6 +73,7 @@ if __name__ == "__main__":
         # print(Hashs[j], " ", len(Hashs[j]))
     print("\nHashs: ", Hashs, " ", len(Hashs), "\n")
 
+    # Fazendo comparação entre caracteristicas adquiridas em receiver e cofre de sender
     Q = []
     K = hashlib.sha1()
     for k in range(len(Cofre)):
@@ -71,8 +87,9 @@ if __name__ == "__main__":
     #     Aux = Aux + str(hashlib.sha1(s.encode('utf-8')).hexdigest()) #Algoritmo concatena hash do valor de cada elemento da lista em uma variavel
     # K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
     print("Hash K :", K.hexdigest())
-#Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
-#Sender realizar computações
+    #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
+    
+    #Sender realizar computações
     ContadorLimite=0
     for i in Q:
         if Cofre[i] in CaracteristicasSender:
