@@ -2,6 +2,7 @@
 from Modulos.IPI import Le_IPI
 from Modulos.IEEE754Converter import Converter
 from Modulos.ChaffPoints import *
+from Modulos.HMAC import *
 import numpy as np
 import hashlib
 
@@ -9,19 +10,20 @@ if __name__ == "__main__":
 
     Limite = 10
     #Sender:
-    # Gerando IDs
-    IDs = random.randint(0,150)
-    IDr = random.randint(0,150)
+    # Gerando IDs e nonce
+    nonce = random.randint(1, 150)
+    IDs = random.randint(1,150)
+    IDr = random.randint(1,150)
     while(IDr==IDs):
-        IDr = random.randint(0, 150)
+        IDr = random.randint(1, 150)
 
     
-    IPIs_Sender = Le_IPI(0,4)
+    IPIs_Sender = Le_IPI(0,2)
     IPIs_Sender_Concatenados =[]
     print(len(IPIs_Sender))
 
     # Juntando 3 IPIs
-    for i in range (0,90,3):
+    for i in range (0,36,3):
         Binario1 = Converter(IPIs_Sender[i])
         Binario2 = Converter(IPIs_Sender[i+1])
         Binario3 = Converter(IPIs_Sender[i+2])
@@ -39,7 +41,7 @@ if __name__ == "__main__":
     print("\nCaracteristicas do Sender(Hashs): ",CaracteristicasSender," ",len(CaracteristicasSender),"\n")
 
     # Gerando Chaffpoints e gerando cofre.
-    chaffpoints=generateChaffPoints(CaracteristicasSender,30)
+    chaffpoints=generateChaffPoints(CaracteristicasSender,288)
     Cofre=[]
     Cofre.extend(CaracteristicasSender)
     Cofre.extend(chaffpoints)
@@ -51,12 +53,12 @@ if __name__ == "__main__":
     # receiver:
     # Receiver recebe IDs,IDr,Cofre e (nonce?)
     # Realizando leitura de IPIs e calculo de caracteristicas de receiver
-    IPIs_receiver = Le_IPI(0,4)
+    IPIs_receiver = Le_IPI(0,2)
     IPIs_Concatenados = []
     print(len(IPIs_receiver))
 
     # Juntando 3 ipis 
-    for i in range(0, 90, 3):
+    for i in range(0, 36, 3):
         Binario1 = Converter(IPIs_receiver[i])
         Binario2 = Converter(IPIs_receiver[i+1])
         Binario3 = Converter(IPIs_receiver[i+2])
@@ -75,12 +77,16 @@ if __name__ == "__main__":
 
     # Fazendo comparação entre caracteristicas adquiridas em receiver e cofre de sender
     Q = []
+    I = []
     K = hashlib.sha1()
     for k in range(len(Cofre)):
         if Cofre[k] in Hashs:
-            Q.append(k)
-            K.update(str(k).encode('utf-8'))
-    print("Indices chave Q: ", Q)
+            Q.append(Cofre[k])
+            I.append(k)
+            K.update(str(Cofre[k]).encode('utf-8'))
+    print("Caracteristicas Q:",Q)
+    print("Indices de caracteristicas I: ", I)
+
     # Forma abaixo de encontrar hash de Q pode estar errada:
     # Aux = ""
     # for s in Q:
@@ -88,10 +94,10 @@ if __name__ == "__main__":
     # K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
     print("Hash K :", K.hexdigest())
     #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
-    
+    #ReceiverAck = _Hmac(K,I+Q+IDr)
     #Sender realizar computações
     ContadorLimite=0
-    for i in Q:
+    for i in I:
         if Cofre[i] in CaracteristicasSender:
             ContadorLimite+=1
     if ContadorLimite>=Limite:
