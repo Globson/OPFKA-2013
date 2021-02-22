@@ -12,8 +12,8 @@ if __name__ == "__main__":
     #Sender:
     # Gerando IDs e nonce
     nonce = random.randint(1, 150)
-    IDs = random.randint(1,150)
-    IDr = random.randint(1,150)
+    IDs = str(random.randint(1,150))
+    IDr = str(random.randint(1,150))
     while(IDr==IDs):
         IDr = random.randint(1, 150)
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     
 
     # receiver:
-    # Receiver recebe IDs,IDr,Cofre e (nonce?)
+    # Receiver recebe IDs,IDr,Cofre e Nonce
     # Realizando leitura de IPIs e calculo de caracteristicas de receiver
     IPIs_receiver = Le_IPI(0,2)
     IPIs_Concatenados = []
@@ -84,7 +84,10 @@ if __name__ == "__main__":
             Q.append(Cofre[k])
             I.append(k)
             K.update(str(Cofre[k]).encode('utf-8'))
+    #QConcatenado= (''.join(Q)) #Uso de join tem mesmo efeito de update acima em hashlib.
+    #K = hashlib.sha1(QConcatenado.encode('utf-8'))
     print("Caracteristicas Q:",Q)
+    #print("Caracteristicas Q concatenadas: ",QConcatenado)
     print("Indices de caracteristicas I: ", I)
 
     # Forma abaixo de encontrar hash de Q pode estar errada:
@@ -94,16 +97,34 @@ if __name__ == "__main__":
     # K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
     print("Hash K :", K.hexdigest())
     #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
-    #ReceiverAck = _Hmac(K,I+Q+IDr)
-    #Sender realizar computações
+    ReceiverAck = CriaAck(K, I, Q, IDr)
+    #Receiver envia {IDs, IDr, I, M AC(K, I|Q|IDr)} para sender
+    #Sender recebe e realizar verificações:
     ContadorLimite=0
     for i in I:
         if Cofre[i] in CaracteristicasSender:
             ContadorLimite+=1
+
+
     if ContadorLimite>=Limite:
-        print("ACORDO!")
+        #se maior gera chave K'
+        Q_ = []
+        for i in I:
+            Q_.append(Cofre[i])
+        Caracteristicas = (''.join(Q_))
+        #print(Caracteristicas)
+        K_ = hashlib.sha1(Caracteristicas.encode('utf-8'))
+        if(CriaAck(K_, I, Q_, IDr) == ReceiverAck):
+            #print("K_:", K_.hexdigest())
+            #print("K:",K.hexdigest())
+        #if(K_.hexdigest()==K.hexdigest()):
+            #Sender enviar ACK2 para receiver
+            Ack2 = CriaAck2(K_, str(nonce), IDs, IDr)
+            print("ACORDO!")
+        else:
+            print("NAO ACORDO! MAC DIFERENTE")
     else:
-        print("NAO ACORDO!")
+        print("NAO ACORDO!, Limite abaixo")
 
 
 

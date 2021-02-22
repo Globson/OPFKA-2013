@@ -29,3 +29,10 @@ https://www.nsnam.org/docs/tutorial/html/getting-started.html#overview
 Reuniao
     Ainda nao sei ao certo quais valores devem ser setados de limite, quantidade de ipis e chaffpoints
 
+
+Reunião
+    Implementei a variavel nonce
+    Acredito q consegui uma configuração de tamanho de cofre (chaffpoints + caracteristicas) correto, porem ainda não tenho certeza em relação ao limite necessário
+    Comecei a implementar o MAC, porem percebi que ordem original das caracteristicas é diferente, logo o hash tambem
+    Ainda falta testar para mais individuos(estou usando 36 IPIs)
+
