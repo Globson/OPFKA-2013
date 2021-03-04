@@ -33,6 +33,12 @@ Reuniao
 Reunião
     Implementei a variavel nonce
     Acredito q consegui uma configuração de tamanho de cofre (chaffpoints + caracteristicas) correto, porem ainda não tenho certeza em relação ao limite necessário
-    Comecei a implementar o MAC, porem percebi que ordem original das caracteristicas é diferente, logo o hash tambem
+    Comecei a implementar o MAC, acho que esta certo
     Ainda falta testar para mais individuos(estou usando 36 IPIs)
+    Em alguns casos acontece uma detecção de pico com problemas e nao sao contabilizados IPIs suficientes
+
+    Pra semana q vem:
+        Resolver questao do mascaramento de bits
+        Resolver pra mais individuos
+        Testar bastante
 
