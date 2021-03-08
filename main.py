@@ -18,7 +18,7 @@ if __name__ == "__main__":
         IDs = str(random.randint(1,150))
         IDr = str(random.randint(1,150))
         while(IDr==IDs):
-            IDr = random.randint(1, 150)
+            IDr = str(random.randint(1, 150))
 
 
         IPIs_Sender = Le_IPI(0,2,Paciente)
