@@ -18,15 +18,20 @@ Variance: 0,01
 
 Memory Peak to unlock vault on Receiver
 Mean: 0,43
-Standard Deviation: 0,03
+Standard Deviation: 0,04
+Variance: 0,0
+
+Memory Peak to to verify positions on Transmitter:
+Mean: 1,95
+Standard Deviation: 0,01
 Variance: 0,0
 
 Total Memory Peak Transmitter
-Mean: 26,69
+Mean: 28,64
 Standard Deviation: 0,16
 Variance: 0,02
 
 Total Memory Peak Receiver
 Mean: 2,6
-Standard Deviation: 0,03
+Standard Deviation: 0,04
 Variance: 0,0

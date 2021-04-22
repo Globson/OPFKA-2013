@@ -13,6 +13,7 @@ def memoryPeakStatistics():
     memoryPeakExtractFeatReceiverArray = []
     memoryPeakGenerateLockVaultArray = []
     memoryPeakUnlockVaultArray = []
+    memoryPeakFeatureAcknowledgementArray =[]
     totalMemoryPeakTransmitterArray = []
     totalMemoryPeakReceiverArray = []
     
@@ -21,20 +22,22 @@ def memoryPeakStatistics():
       
         if(i == 13 or i == 74):
             continue
-        memoryPeakExtractFeatTransmitter, memoryPeakExtractFeatReceiver, memoryPeakGenerateLockVault, memoryPeakUnlockVault = OPFKAProtocolTime(i)
+        memoryPeakExtractFeatTransmitter, memoryPeakExtractFeatReceiver, memoryPeakGenerateLockVault, memoryPeakUnlockVault, memoryPeakFeatureAcknowledgement = OPFKAProtocolMemory(i)
 
         memoryPeakExtractFeatTransmitterArray.append(memoryPeakExtractFeatTransmitter/1024)
         memoryPeakExtractFeatReceiverArray.append(memoryPeakExtractFeatReceiver/1024)
         memoryPeakGenerateLockVaultArray.append(memoryPeakGenerateLockVault/1024)
         memoryPeakUnlockVaultArray.append(memoryPeakUnlockVault/1024)
-        totalMemoryPeakTransmitterArray.append(memoryPeakExtractFeatTransmitter/1024 + memoryPeakGenerateLockVault/1024)
+        memoryPeakFeatureAcknowledgementArray.append(memoryPeakFeatureAcknowledgement/1024)
+        totalMemoryPeakTransmitterArray.append(memoryPeakExtractFeatTransmitter/1024 + memoryPeakGenerateLockVault/1024 + memoryPeakFeatureAcknowledgement/1024)
         totalMemoryPeakReceiverArray.append(memoryPeakExtractFeatReceiver/1024 + memoryPeakUnlockVault/1024)
 
         print("\nMemory Peak to Extract Features on Transmitter: "+str(memoryPeakExtractFeatTransmitter/1024))
         print("Memory Peak to Extract Features on Receiver: "+str(memoryPeakExtractFeatReceiver/1024))
         print("Memory Peak to generate the locked vault on Transmitter: "+str(memoryPeakGenerateLockVault/1024))
         print("Memory Peak to unlock vault on Receiver: "+str(memoryPeakUnlockVault/1024))
-        print("Total memory peak Transmitter: "+str(memoryPeakExtractFeatTransmitter/1024 + memoryPeakGenerateLockVault/1024))
+        print("Memory Peak to verify positions on Transmitter: "+str(memoryPeakFeatureAcknowledgement/1024))
+        print("Total memory peak Transmitter: "+str(memoryPeakExtractFeatTransmitter/1024 + memoryPeakGenerateLockVault/1024 + memoryPeakFeatureAcknowledgement/1024))
         print("Total memory peak Receiver: "+str(memoryPeakExtractFeatReceiver/1024 + memoryPeakUnlockVault/1024))
 
     print("\n---------------------")
@@ -59,6 +62,11 @@ def memoryPeakStatistics():
     print("Mean: " + str(statistics.mean(memoryPeakUnlockVaultArray)))
     print("Standard Deviation: " + str(statistics.pstdev(memoryPeakUnlockVaultArray)))
     print("Variance: " + str(statistics.pvariance(memoryPeakUnlockVaultArray)))
+
+    print("\nMemory Peak to verify positions on Transmitter:")
+    print("Mean: " + str(statistics.mean(memoryPeakFeatureAcknowledgementArray)))
+    print("Standard Deviation: " + str(statistics.pstdev(memoryPeakFeatureAcknowledgementArray)))
+    print("Variance: " + str(statistics.pvariance(memoryPeakFeatureAcknowledgementArray)))
 
     print("\nTotal Memory Peak Transmitter")
     print("Mean: " + str(statistics.mean(totalMemoryPeakTransmitterArray)))
@@ -95,6 +103,11 @@ def memoryPeakStatistics():
     archive.write("\nStandard Deviation: " + str(round(statistics.pstdev(memoryPeakUnlockVaultArray), 2)).replace('.', ','))
     archive.write("\nVariance: " + str(round(statistics.pvariance(memoryPeakUnlockVaultArray), 2)).replace('.', ','))
 
+    archive.write("\n\nMemory Peak to to verify positions on Transmitter:")
+    archive.write("\nMean: " + str(round(statistics.mean(memoryPeakFeatureAcknowledgementArray), 2)).replace('.', ','))
+    archive.write("\nStandard Deviation: " + str(round(statistics.pstdev(memoryPeakFeatureAcknowledgementArray), 2)).replace('.', ','))
+    archive.write("\nVariance: " + str(round(statistics.pvariance(memoryPeakFeatureAcknowledgementArray), 2)).replace('.', ','))
+
     archive.write("\n\nTotal Memory Peak Transmitter")
     archive.write("\nMean: " + str(round(statistics.mean(totalMemoryPeakTransmitterArray), 2)).replace('.', ','))
     archive.write("\nStandard Deviation: " + str(round(statistics.pstdev(totalMemoryPeakTransmitterArray), 2)).replace('.', ','))
@@ -106,14 +119,14 @@ def memoryPeakStatistics():
     archive.write("\nVariance: " + str(round(statistics.pvariance(totalMemoryPeakReceiverArray), 2)).replace('.', ','))
 
     archive.close()
-def OPFKAProtocolTime(Paciente):
+def OPFKAProtocolMemory(Paciente):
 
     # Definindo variáveis para coletar tempo
     memoryPeakExtractFeatTransmitter = 0
     memoryPeakExtractFeatReceiver = 0
     memoryPeakGenerateLockVault = 0
     memoryPeakUnlockVault = 0
-
+    memoryPeakFeatureAcknowledgement = 0
     
     Limite = 10
     #Sender Gerando caracteristicas e criando cofre:
@@ -224,6 +237,7 @@ def OPFKAProtocolTime(Paciente):
     ReceiverAck = CriaAck(K, I, Q, IDr)
     #Receiver envia {IDs, IDr, I, M AC(K, I|Q|IDr)} para sender
     #Sender recebe e realizar verificações:
+    tracemalloc.start()
     ContadorLimite = 0
     for i in I:
         if Cofre[i] in CaracteristicasSender:
@@ -249,7 +263,11 @@ def OPFKAProtocolTime(Paciente):
     else:
         print("NAO ACORDO!, Limite abaixo")
 
-    return memoryPeakExtractFeatTransmitter, memoryPeakExtractFeatReceiver, memoryPeakGenerateLockVault, memoryPeakUnlockVault
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    memoryPeakFeatureAcknowledgement = peak
+
+    return memoryPeakExtractFeatTransmitter, memoryPeakExtractFeatReceiver, memoryPeakGenerateLockVault, memoryPeakUnlockVault, memoryPeakFeatureAcknowledgement
 
 
 memoryPeakStatistics()
