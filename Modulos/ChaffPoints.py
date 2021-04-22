@@ -24,5 +24,5 @@ def generateChaffPoints(vetorHash,quant_chaff):
             if chaffpoint not in vetorHash:
                 chaffpoints.append(chaffpoint)
                 break
-    print(quant_chaff," ChaffPoints: ",chaffpoints)   
+    #print(quant_chaff," ChaffPoints: ",chaffpoints)   
     return chaffpoints
