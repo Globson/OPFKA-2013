@@ -14,6 +14,7 @@ def timeStatistics():
     timeExtractFeatReceiverArray = []
     timeGenerateLockVaultArray = []
     timeUnlockVaultArray = []
+    timeFeatureAcknowledgementArray = [] 
     totalTimeTransmitterArray = []
     totalTimeReceiverArray = []
 
@@ -21,20 +22,22 @@ def timeStatistics():
       
         if(i == 13 or i == 74):
             continue
-        timeExtractFeatTransmitter, timeExtractFeatReceiver, timeGenerateLockVault, timeUnlockVault = OPFKAProtocolTime(i)
+        timeExtractFeatTransmitter, timeExtractFeatReceiver, timeGenerateLockVault, timeUnlockVault, timeFeatureAcknowledgement = OPFKAProtocolTime(i)
 
         timeExtractFeatTransmitterArray.append(timeExtractFeatTransmitter)
         timeExtractFeatReceiverArray.append(timeExtractFeatReceiver)
         timeGenerateLockVaultArray.append(timeGenerateLockVault)
         timeUnlockVaultArray.append(timeUnlockVault)
-        totalTimeTransmitterArray.append(timeExtractFeatTransmitter + timeGenerateLockVault)
+        timeFeatureAcknowledgementArray.append(timeFeatureAcknowledgement)
+        totalTimeTransmitterArray.append(timeExtractFeatTransmitter + timeGenerateLockVault + timeFeatureAcknowledgement)
         totalTimeReceiverArray.append(timeExtractFeatReceiver + timeUnlockVault)
 
         print("\nTime to Extract Features on Transmitter: "+str(timeExtractFeatTransmitter))
         print("Time to Extract Features on Receiver: "+str(timeExtractFeatReceiver))
         print("Time to generate the locked vault on Transmitter: "+str(timeGenerateLockVault))
         print("Time to unlock vault on Receiver: "+str(timeUnlockVault))
-        print("Total time: "+str(timeExtractFeatTransmitter + timeExtractFeatReceiver + timeGenerateLockVault + timeUnlockVault))
+        print("Time to verify positions on transmitter: "+str(timeFeatureAcknowledgement))
+        print("Total time: "+str(timeExtractFeatTransmitter + timeExtractFeatReceiver + timeGenerateLockVault + timeUnlockVault + timeFeatureAcknowledgement))
 
     print("\n---------------------")
     print("\nTotal statistics")
@@ -58,6 +61,11 @@ def timeStatistics():
     print("Mean: " + str(statistics.mean(timeUnlockVaultArray)))
     print("Standard Deviation: " + str(statistics.pstdev(timeUnlockVaultArray)))
     print("Variance: " + str(statistics.pvariance(timeUnlockVaultArray)))
+
+    print("\nTime to verify positions on transmitter")
+    print("Mean: " + str(statistics.mean(timeFeatureAcknowledgementArray)))
+    print("Standard Deviation: " + str(statistics.pstdev(timeFeatureAcknowledgementArray)))
+    print("Variance: " + str(statistics.pvariance(timeFeatureAcknowledgementArray)))
 
     print("\nTotal Time Transmitter")
     print("Mean: " + str(statistics.mean(totalTimeTransmitterArray)))
@@ -93,6 +101,11 @@ def timeStatistics():
     archive.write("\nStandard Deviation: " + str(round(statistics.pstdev(timeUnlockVaultArray), 2)).replace('.', ','))
     archive.write("\nVariance: " + str(round(statistics.pvariance(timeUnlockVaultArray), 2)).replace('.', ','))
 
+    archive.write("\n\nTime to verify positions on transmitter")
+    archive.write("\nMean: " + str(round(statistics.mean(timeFeatureAcknowledgementArray), 2)).replace('.', ','))
+    archive.write("\nStandard Deviation: " + str(round(statistics.pstdev(timeFeatureAcknowledgementArray), 2)).replace('.', ','))
+    archive.write("\nVariance: " + str(round(statistics.pvariance(timeFeatureAcknowledgementArray), 2)).replace('.', ','))
+
     archive.write("\n\nTotal Time Transmitter")
     archive.write("\nMean: " + str(round(statistics.mean(totalTimeTransmitterArray), 2)).replace('.', ','))
     archive.write("\nStandard Deviation: " + str(round(statistics.pstdev(totalTimeTransmitterArray), 2)).replace('.', ','))
@@ -112,7 +125,7 @@ def OPFKAProtocolTime(Paciente):
     timeExtractFeatReceiver = 0
     timeGenerateLockVault = 0
     timeUnlockVault = 0
-
+    timeFeatureAcknowledgement = 0
     
     Limite = 10
     #Sender Gerando caracteristicas e criando cofre:
@@ -223,6 +236,7 @@ def OPFKAProtocolTime(Paciente):
     ReceiverAck = CriaAck(K, I, Q, IDr)
     #Receiver envia {IDs, IDr, I, M AC(K, I|Q|IDr)} para sender
     #Sender recebe e realizar verificações:
+    inicio = time.time()
     ContadorLimite = 0
     for i in I:
         if Cofre[i] in CaracteristicasSender:
@@ -247,8 +261,9 @@ def OPFKAProtocolTime(Paciente):
             print("NAO ACORDO! MAC DIFERENTE")
     else:
         print("NAO ACORDO!, Limite abaixo")
-
+    fim = time.time()
+    timeFeatureAcknowledgement = fim - inicio
     
-    return timeExtractFeatTransmitter*1000, timeExtractFeatReceiver*1000, timeGenerateLockVault*1000, timeUnlockVault*1000
+    return timeExtractFeatTransmitter*1000, timeExtractFeatReceiver*1000, timeGenerateLockVault*1000, timeUnlockVault*1000, timeFeatureAcknowledgement*1000
 
 timeStatistics()
