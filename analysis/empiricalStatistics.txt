@@ -3,35 +3,35 @@ Total statistics
 
 Time to Extract Features on Transmitter
 Mean: 0,67
-Standard Deviation: 0,19
-Variance: 0,04
+Standard Deviation: 0,17
+Variance: 0,03
 
 Time to Extract Features on Receiver
-Mean: 0,71
-Standard Deviation: 0,24
-Variance: 0,06
+Mean: 0,68
+Standard Deviation: 0,16
+Variance: 0,03
 
 Time to generate the locked vault on Transmitter
-Mean: 8,06
-Standard Deviation: 1,38
-Variance: 1,91
+Mean: 8,1
+Standard Deviation: 1,34
+Variance: 1,79
 
 Time to unlock vault on Receiver
-Mean: 0,14
-Standard Deviation: 0,05
+Mean: 0,12
+Standard Deviation: 0,04
 Variance: 0,0
 
 Time to verify positions on transmitter
-Mean: 0,06
-Standard Deviation: 0,06
+Mean: 0,05
+Standard Deviation: 0,01
 Variance: 0,0
 
 Total Time Transmitter
-Mean: 8,79
-Standard Deviation: 1,52
-Variance: 2,32
+Mean: 8,82
+Standard Deviation: 1,41
+Variance: 1,98
 
 Total Time Receiver
-Mean: 0,85
-Standard Deviation: 0,28
-Variance: 0,08
+Mean: 0,81
+Standard Deviation: 0,19
+Variance: 0,04

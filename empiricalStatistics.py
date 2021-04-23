@@ -127,8 +127,7 @@ def OPFKAProtocolTime(Paciente):
     timeUnlockVault = 0
     timeFeatureAcknowledgement = 0
     
-    Limite = 10
-    #Sender Gerando caracteristicas e criando cofre:
+    Limite = 10  
     # Gerando IDs e nonce
     nonce = random.randint(1, 150)
     IDs = str(random.randint(1, 150))
@@ -136,12 +135,15 @@ def OPFKAProtocolTime(Paciente):
     while(IDr == IDs):
         IDr = str(random.randint(1, 150))
 
+
+    #Sender Gerando caracteristicas e criando cofre:
     IPIs_Sender = Le_IPI(0, 2, Paciente)
     IPIs_Sender_Concatenados = []
     print(len(IPIs_Sender))
-
+    
+    #Sender Gerando caracteristicas e criando cofre:
     inicio = time.time()
-        # Juntando 3 IPIs
+    # Concatenando 3 IPIs
     for i in range(0, 36, 3):
         Binario1 = Converter(IPIs_Sender[i])
         Binario2 = Converter(IPIs_Sender[i+1])
@@ -155,17 +157,15 @@ def OPFKAProtocolTime(Paciente):
     for j in range(len(IPIs_Sender_Concatenados)):
         CaracteristicasSender.append(
             str(hashlib.sha1(IPIs_Sender_Concatenados[j].encode('utf-8')).hexdigest()))
-        # print(Hashs[j]," ",len(Hashs[j]))
+        # print(CaracteristicasSender[j]," ",len(CaracteristicasSender[j]))
         CaracteristicasSender[j] = (CaracteristicasSender[j][0:20])
-        # print(Hashs[j]," ",len(Hashs[j]))
+        # print(CaracteristicasSender[j]," ",len(CaracteristicasSender[j]))
     # print("\nCaracteristicas do Sender(Hashs): ", CaracteristicasSender, " ", len(CaracteristicasSender), "\n")
-
     fim = time.time()
     timeExtractFeatTransmitter = fim - inicio
     
 
     inicio = time.time()
-      
     # Gerando Chaffpoints e gerando cofre.
     chaffpoints = generateChaffPoints(CaracteristicasSender, 288)
     Cofre = []
@@ -176,6 +176,9 @@ def OPFKAProtocolTime(Paciente):
     #print("\nCofre de tamanho ", len(Cofre), " : ", Cofre)
     fim = time.time()
     timeGenerateLockVault = fim - inicio  
+
+
+
     # receiver:
     # Receiver recebe IDs,IDr,Cofre e Nonce
     # Realizando leitura de IPIs e calculo de caracteristicas de receiver
@@ -185,8 +188,7 @@ def OPFKAProtocolTime(Paciente):
 
   
     inicio = time.time()
-   
-    # Juntando 3 ipis
+    # Concatenando 3 ipis
     for i in range(0, 36, 3):
         Binario1 = Converter(IPIs_receiver[i])
         Binario2 = Converter(IPIs_receiver[i+1])
@@ -196,26 +198,26 @@ def OPFKAProtocolTime(Paciente):
     print(IPIs_Concatenados)
 
     # Caracteristicas do receiver (hashs de IPIs)
-    Hashs = []
+    CaracteristicasReceiver = []
     for j in range(len(IPIs_Concatenados)):
-        Hashs.append(
+        CaracteristicasReceiver.append(
             str(hashlib.sha1(IPIs_Concatenados[j].encode('utf-8')).hexdigest()))
-        # print(Hashs[j], " ", len(Hashs[j]))
-        Hashs[j] = (Hashs[j][0:20])
-        # print(Hashs[j], " ", len(Hashs[j]))
-    #print("\nHashs: ", Hashs, " ", len(Hashs), "\n")
+        # print(CaracteristicasReceiver[j], " ", len(CaracteristicasReceiver[j]))
+        CaracteristicasReceiver[j] = (CaracteristicasReceiver[j][0:20])
+        # print(CaracteristicasReceiver[j], " ", len(CaracteristicasReceiver[j]))
+    #print("\nCaracteristicasReceiver: ", CaracteristicasReceiver, " ", len(CaracteristicasReceiver), "\n")
     fim = time.time()
     timeExtractFeatReceiver = fim - inicio
 
+
+
     # Fazendo comparação entre caracteristicas adquiridas em receiver e cofre de sender
     inicio = time.time()
- 
-    
     Q = []
     I = []
     K = hashlib.sha1()
     for k in range(len(Cofre)):
-        if Cofre[k] in Hashs:
+        if Cofre[k] in CaracteristicasReceiver:
             Q.append(Cofre[k])
             I.append(k)
             K.update(str(Cofre[k]).encode('utf-8'))
@@ -226,15 +228,15 @@ def OPFKAProtocolTime(Paciente):
     #print("Indices de caracteristicas I: ", I)
     fim = time.time()
     timeUnlockVault = fim - inicio
-    # Forma abaixo de encontrar hash de Q pode estar errada:
-    # Aux = ""
-    # for s in Q:
-    #     Aux = Aux + str(hashlib.sha1(s.encode('utf-8')).hexdigest()) #Algoritmo concatena hash do valor de cada elemento da lista em uma variavel
-    # K = str(hashlib.sha1(Aux.encode('utf-8')).hexdigest()) #Por fim faz o hash da variavel.
     print("Hash K :", K.hexdigest())
+
+
     #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
     ReceiverAck = CriaAck(K, I, Q, IDr)
     #Receiver envia {IDs, IDr, I, M AC(K, I|Q|IDr)} para sender
+
+
+    
     #Sender recebe e realizar verificações:
     inicio = time.time()
     ContadorLimite = 0
