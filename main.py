@@ -7,7 +7,7 @@ import numpy as np
 import hashlib
 
 if __name__ == "__main__":
-    for Paciente in range(1,91):
+    for Paciente in range(1,52):
         if(Paciente==13 or Paciente==74):
             continue
         Limite = 10

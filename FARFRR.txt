@@ -8,3 +8,9 @@ Com o mesmo
 
 Enteder H(K,K')
 Rever 20 bits
+
+
+
+
+
+FAR com pacientes diferentes e limite 1 deu 3% de FAR

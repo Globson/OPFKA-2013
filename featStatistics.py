@@ -1,9 +1,12 @@
 import wfdb
 import random
 import time
-
-from classes.SensorTransmitter import SensorTransmitter
-from classes.SensorReceiver import SensorReceiver
+from Modulos.IPI import *
+from Modulos.IEEE754Converter import Converter
+from Modulos.ChaffPoints import *
+from Modulos.HMAC import *
+import numpy as np
+import hashlib
 
 def featStatistics():
     ARArray = []
@@ -12,12 +15,15 @@ def featStatistics():
     FARArray = []
     random.seed(time.time())
 
-    for i in range(50):
-        AR, FRR = testFRR(i+1, 100, 50)
+    for i in range(51):
+        if i==12:
+            continue
+
+        AR, FRR = testFRR(i+1, 10, 50)
         ARArray.append(AR)
         FRRArray.append(FRR)
 
-        RR, FAR = testFAR(i+1, 100, 50)
+        RR, FAR = testFAR(i+1, 10, 50)
         RRArray.append(RR)
         FARArray.append(FAR)
 
@@ -56,13 +62,13 @@ def testFRR(recordNum, iterations, sampleVariation):
     countFRR = 0
     print(recordNum)
     for i in range(iterations):
-        sampleFrom = random.randint(0, 800)
-        recordTransmitter = wfdb.rdrecord('samples/'+str(recordNum), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
+        #sampleFrom = random.randint(0, 800)
+        ##recordTransmitter = wfdb.rdrecord('samples/'+str(recordNum), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         #recordTransmitter = wfdb.rdrecord('samples/patient'+recordNum+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
-        recordReceiver = wfdb.rdrecord('samples/'+str(recordNum), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
+        ##recordReceiver = wfdb.rdrecord('samples/'+str(recordNum), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         #recordReceiver = wfdb.rdrecord('samples/patient'+recordNum+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
         
-        if(PSKAPROTOCOL(recordTransmitter, recordReceiver)):
+        if(OPFKAProtocol(recordNum,recordNum)):
             count = count + 1
         else:
             countFRR = countFRR + 1
@@ -71,47 +77,272 @@ def testFRR(recordNum, iterations, sampleVariation):
 def testFAR(recordNum, iterations, sampleVariation):
     count = 0
     countFAR = 0
-    recordNumT = recordNum
+    PacienteSender = recordNum
     for i in range(iterations):
-        sampleFrom = random.randint(0, 800)
-
-        recordNumR = random.randint(1, 200)
-        while recordNumR == recordNumT:
-             recordNumR = random.randint(1, 200)
-        recordTransmitter = wfdb.rdrecord('samples/'+str(recordNumT), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
+        sampleFrom = random.randint(100, 150)
+        PacienteReceiver = random.randint(1, 90)
+        while (PacienteSender == PacienteReceiver) or (PacienteReceiver == 13) or (PacienteReceiver == 74) :
+             PacienteReceiver = random.randint(1, 90)
+        ##recordTransmitter = wfdb.rdrecord('samples/'+str(recordNumT), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         # recordTransmitter = wfdb.rdrecord('samples/patient'+recordNumT+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
-        recordReceiver = wfdb.rdrecord('samples/'+str(recordNumR), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
+        ##recordReceiver = wfdb.rdrecord('samples/'+str(recordNumR), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         # recordReceiver = wfdb.rdrecord('samples/patient'+recordNumR+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
-        if(PSKAPROTOCOL(recordTransmitter, recordReceiver)):
+        if(OPFKAProtocol(PacienteSender,PacienteReceiver,Limite = 1)):
             countFAR = countFAR + 1
         else:
             count = count + 1
     return count/iterations, countFAR/iterations
 
-def PSKAPROTOCOL(recordTransmitter, recordReceiver):
+def OPFKAProtocol(PacienteSender, PacienteReceiver, Limite = 10):
 
-    # Definindo frequencia e quantidade de tempo para coleta das amostras
-    frequency = 500
-    seconds = 10
+    '''if(Paciente==13 or Paciente==74):
+        continue'''
+    #Limite = 10
+    # Paciente = 90
 
-    # Definindo ordem do polinômio
-    order = 8
 
-    # Identificadores para o transmissor e receptor, respectivamente 
-    IDt = 1
-    IDr = 2
+    #Sender:
+    # Gerando IDs e nonce
+    nonce = random.randint(1, 150)
+    IDs = str(random.randint(1,150))
+    IDr = str(random.randint(1,150))
+    while(IDr==IDs):
+        IDr = str(random.randint(1, 150))
 
-    sensorTransmitter = SensorTransmitter(frequency, seconds, order, IDt, IDr)
-    sensorReceiver = SensorReceiver(frequency, seconds, order, IDr)
+    IPIs_Sender = Le_IPI(0,2,PacienteSender)
+    IPIs_Sender_Concatenados =[]
+    print(len(IPIs_Sender))
 
-    sensorTransmitter.extractFeats(recordTransmitter)
-    sensorReceiver.extractFeats(recordReceiver)
+    # Concatenando 3 IPIs
+    for i in range (0,36,3):
+        Binario1 = Converter(IPIs_Sender[i])
+        Binario2 = Converter(IPIs_Sender[i+1])
+        Binario3 = Converter(IPIs_Sender[i+2])
+        IPIs_Sender_Concatenados.append(Binario1[28:32]+Binario2[28:32]+Binario3[28:32])
 
-    sensorTransmitter.generateVault()
 
-    sensorReceiver.receiveTransmitterMessage(sensorTransmitter.createTransmitterMessage())
-    sensorReceiver.unlockVault()
-    
-    return sensorTransmitter.receiveAckMessage(sensorReceiver.createAckMessage())
+    # print(IPIs_Concatenados)
+    # Fazendo hash de cada ipi e gerando caracteristica
+    CaracteristicasSender=[]
+    for j in range(len(IPIs_Sender_Concatenados)):
+        CaracteristicasSender.append(str(hashlib.sha1(IPIs_Sender_Concatenados[j].encode('utf-8')).hexdigest()))
+        # print(CaracteristicasSender[j]," ",len(CaracteristicasSender[j]))
+        CaracteristicasSender[j]= (CaracteristicasSender[j][0:20])
+        # print(CaracteristicasSender[j]," ",len(CaracteristicasSender[j]))
+    #print("\nCaracteristicas do Sender(Hashs): ",CaracteristicasSender," ",len(CaracteristicasSender),"\n")
+
+
+
+    # Gerando Chaffpoints e gerando cofre.
+    chaffpoints=generateChaffPoints(CaracteristicasSender,288)
+    Cofre=[]
+    Cofre.extend(CaracteristicasSender)
+    Cofre.extend(chaffpoints)
+    # print(Cofre)
+    np.random.shuffle(Cofre)
+    #print("\nCofre de tamanho ",len(Cofre)," : ",Cofre)
+
+    # receiver:
+    # Receiver recebe IDs,IDr,Cofre e Nonce
+    # Realizando leitura de IPIs e calculo de caracteristicas de receiver
+    IPIs_receiver = Le_IPI(0,2,PacienteReceiver)
+    IPIs_Concatenados = []
+    print(len(IPIs_receiver))
+
+    # Concatenando 3 ipis 
+    for i in range(0, 36, 3):
+        Binario1 = Converter(IPIs_receiver[i])
+        Binario2 = Converter(IPIs_receiver[i+1])
+        Binario3 = Converter(IPIs_receiver[i+2])
+        IPIs_Concatenados.append(Binario1[28:32]+Binario2[28:32]+Binario3[28:32])
+    print(IPIs_Concatenados)
+
+    # Caracteristicas do receiver (hashs de IPIs)
+    CaracteristicasReceiver = []
+    for j in range(len(IPIs_Concatenados)):
+        CaracteristicasReceiver.append(str(hashlib.sha1(IPIs_Concatenados[j].encode('utf-8')).hexdigest()))
+        # print(CaracteristicasReceiver[j], " ", len(CaracteristicasReceiver[j]))
+        CaracteristicasReceiver[j] = (CaracteristicasReceiver[j][0:20])
+        # print(CaracteristicasReceiver[j], " ", len(CaracteristicasReceiver[j]))
+    #print("\nCaracteristicasReceiver: ", CaracteristicasReceiver, " ", len(CaracteristicasReceiver), "\n")
+
+
+    # Fazendo comparação entre caracteristicas adquiridas em receiver e cofre de sender
+    Q = []
+    I = []
+    K = hashlib.sha1()
+    for k in range(len(Cofre)):
+        if Cofre[k] in CaracteristicasReceiver:
+            Q.append(Cofre[k])
+            I.append(k)
+            K.update(str(Cofre[k]).encode('utf-8'))
+    #QConcatenado= (''.join(Q)) #Uso de join tem mesmo efeito de update acima em hashlib.
+    #K = hashlib.sha1(QConcatenado.encode('utf-8'))
+    #print("Caracteristicas Q:",Q)
+    #print("Caracteristicas Q concatenadas: ",QConcatenado)
+    #print("Indices de caracteristicas I: ", I)
+
+
+    print("Hash K :", K.hexdigest())
+    #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
+    ReceiverAck = CriaAck(K, I, Q, IDr)
+    #Receiver envia {IDs, IDr, I, M AC(K, I|Q|IDr)} para sender
+
+
+
+
+    #Sender recebe e realizar verificações:
+    ContadorLimite=0
+    for i in I:
+        if Cofre[i] in CaracteristicasSender:
+            ContadorLimite+=1
+
+
+    if ContadorLimite>=Limite:
+        #se maior gera chave K'
+        Q_ = []
+        for i in I:
+            Q_.append(Cofre[i])
+        Caracteristicas = (''.join(Q_))
+        #print(Caracteristicas)
+        K_ = hashlib.sha1(Caracteristicas.encode('utf-8'))
+        if(CriaAck(K_, I, Q_, IDr) == ReceiverAck):
+            #print("K_:", K_.hexdigest())
+            #print("K:",K.hexdigest())
+        #if(K_.hexdigest()==K.hexdigest()):
+            #Sender enviar ACK2 para receiver
+            Ack2 = CriaAck2(K_, str(nonce), IDs, IDr)
+            print("ACORDO!")
+            return True
+        else:
+            print("NAO ACORDO! MAC DIFERENTE")
+            return False
+    else:
+        print("NAO ACORDO!, Limite abaixo")
+        return False
+
+
+
+def OPFKAProtocol2(PacienteSender, PacienteReceiver, samplefrom, Limite=10):
+    '''if(Paciente==13 or Paciente==74):
+        continue'''
+    #Limite = 10
+    # Paciente = 90
+
+    #Sender:
+    # Gerando IDs e nonce
+    nonce = random.randint(1, 150)
+    IDs = str(random.randint(1, 150))
+    IDr = str(random.randint(1, 150))
+    while(IDr == IDs):
+        IDr = str(random.randint(1, 150))
+
+    IPIs_Sender = Le_IPI(0, 2, PacienteSender)
+    IPIs_Sender_Concatenados = []
+    print(len(IPIs_Sender))
+
+    # Concatenando 3 IPIs
+    for i in range(0, 36, 3):
+        Binario1 = Converter(IPIs_Sender[i])
+        Binario2 = Converter(IPIs_Sender[i+1])
+        Binario3 = Converter(IPIs_Sender[i+2])
+        IPIs_Sender_Concatenados.append(
+            Binario1[28:32]+Binario2[28:32]+Binario3[28:32])
+
+    # print(IPIs_Concatenados)
+    # Fazendo hash de cada ipi e gerando caracteristica
+    CaracteristicasSender = []
+    for j in range(len(IPIs_Sender_Concatenados)):
+        CaracteristicasSender.append(
+            str(hashlib.sha1(IPIs_Sender_Concatenados[j].encode('utf-8')).hexdigest()))
+        # print(CaracteristicasSender[j]," ",len(CaracteristicasSender[j]))
+        CaracteristicasSender[j] = (CaracteristicasSender[j][0:20])
+        # print(CaracteristicasSender[j]," ",len(CaracteristicasSender[j]))
+    #print("\nCaracteristicas do Sender(Hashs): ",CaracteristicasSender," ",len(CaracteristicasSender),"\n")
+
+    # Gerando Chaffpoints e gerando cofre.
+    chaffpoints = generateChaffPoints(CaracteristicasSender, 288)
+    Cofre = []
+    Cofre.extend(CaracteristicasSender)
+    Cofre.extend(chaffpoints)
+    # print(Cofre)
+    np.random.shuffle(Cofre)
+    #print("\nCofre de tamanho ",len(Cofre)," : ",Cofre)
+
+    # receiver:
+    # Receiver recebe IDs,IDr,Cofre e Nonce
+    # Realizando leitura de IPIs e calculo de caracteristicas de receiver
+    IPIs_receiver = Le_IPI2(0, 2, PacienteReceiver, samplefrom)
+    IPIs_Concatenados = []
+    print(len(IPIs_receiver))
+
+    # Concatenando 3 ipis
+    for i in range(0, 36, 3):
+        Binario1 = Converter(IPIs_receiver[i])
+        Binario2 = Converter(IPIs_receiver[i+1])
+        Binario3 = Converter(IPIs_receiver[i+2])
+        IPIs_Concatenados.append(
+            Binario1[28:32]+Binario2[28:32]+Binario3[28:32])
+    print(IPIs_Concatenados)
+
+    # Caracteristicas do receiver (hashs de IPIs)
+    CaracteristicasReceiver = []
+    for j in range(len(IPIs_Concatenados)):
+        CaracteristicasReceiver.append(
+            str(hashlib.sha1(IPIs_Concatenados[j].encode('utf-8')).hexdigest()))
+        # print(CaracteristicasReceiver[j], " ", len(CaracteristicasReceiver[j]))
+        CaracteristicasReceiver[j] = (CaracteristicasReceiver[j][0:20])
+        # print(CaracteristicasReceiver[j], " ", len(CaracteristicasReceiver[j]))
+    #print("\nCaracteristicasReceiver: ", CaracteristicasReceiver, " ", len(CaracteristicasReceiver), "\n")
+
+    # Fazendo comparação entre caracteristicas adquiridas em receiver e cofre de sender
+    Q = []
+    I = []
+    K = hashlib.sha1()
+    for k in range(len(Cofre)):
+        if Cofre[k] in CaracteristicasReceiver:
+            Q.append(Cofre[k])
+            I.append(k)
+            K.update(str(Cofre[k]).encode('utf-8'))
+    #QConcatenado= (''.join(Q)) #Uso de join tem mesmo efeito de update acima em hashlib.
+    #K = hashlib.sha1(QConcatenado.encode('utf-8'))
+    #print("Caracteristicas Q:",Q)
+    #print("Caracteristicas Q concatenadas: ",QConcatenado)
+    #print("Indices de caracteristicas I: ", I)
+
+    print("Hash K :", K.hexdigest())
+    #Receiver envia para Sender mensagem IDr,IDs, MAC(K,I / Q / IDr)
+    ReceiverAck = CriaAck(K, I, Q, IDr)
+    #Receiver envia {IDs, IDr, I, M AC(K, I|Q|IDr)} para sender
+
+    #Sender recebe e realizar verificações:
+    ContadorLimite = 0
+    for i in I:
+        if Cofre[i] in CaracteristicasSender:
+            ContadorLimite += 1
+
+    if ContadorLimite >= Limite:
+        #se maior gera chave K'
+        Q_ = []
+        for i in I:
+            Q_.append(Cofre[i])
+        Caracteristicas = (''.join(Q_))
+        #print(Caracteristicas)
+        K_ = hashlib.sha1(Caracteristicas.encode('utf-8'))
+        if(CriaAck(K_, I, Q_, IDr) == ReceiverAck):
+            #print("K_:", K_.hexdigest())
+            #print("K:",K.hexdigest())
+            #if(K_.hexdigest()==K.hexdigest()):
+            #Sender enviar ACK2 para receiver
+            Ack2 = CriaAck2(K_, str(nonce), IDs, IDr)
+            print("ACORDO!")
+            return True
+        else:
+            print("NAO ACORDO! MAC DIFERENTE")
+            return False
+    else:
+        print("NAO ACORDO!, Limite abaixo")
+        return False
+
 
 featStatistics()
