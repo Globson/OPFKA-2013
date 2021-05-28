@@ -19,11 +19,11 @@ def featStatistics():
         if i==12:
             continue
 
-        AR, FRR = testFRR(i+1, 10, 50)
+        AR, FRR = testFRR(i+1, 100, 50)
         ARArray.append(AR)
         FRRArray.append(FRR)
 
-        RR, FAR = testFAR(i+1, 10, 50)
+        RR, FAR = testFAR(i+1, 100, 50)
         RRArray.append(RR)
         FARArray.append(FAR)
 
@@ -61,14 +61,15 @@ def testFRR(recordNum, iterations, sampleVariation):
     count = 0
     countFRR = 0
     print(recordNum)
+    IPIs_Sender = Le_IPI(0, 2, recordNum)
+    IPIs_receiver = Le_IPI(0, 2, recordNum)
     for i in range(iterations):
         #sampleFrom = random.randint(0, 800)
         ##recordTransmitter = wfdb.rdrecord('samples/'+str(recordNum), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         #recordTransmitter = wfdb.rdrecord('samples/patient'+recordNum+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
         ##recordReceiver = wfdb.rdrecord('samples/'+str(recordNum), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         #recordReceiver = wfdb.rdrecord('samples/patient'+recordNum+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
-        
-        if(OPFKAProtocol(recordNum,recordNum)):
+        if(OPFKAProtocol2(IPIs_Sender, IPIs_receiver)):
             count = count + 1
         else:
             countFRR = countFRR + 1
@@ -78,6 +79,7 @@ def testFAR(recordNum, iterations, sampleVariation):
     count = 0
     countFAR = 0
     PacienteSender = recordNum
+    IPIs_Sender = Le_IPI(0, 2, PacienteSender)
     for i in range(iterations):
         sampleFrom = random.randint(100, 150)
         PacienteReceiver = random.randint(1, 90)
@@ -87,7 +89,8 @@ def testFAR(recordNum, iterations, sampleVariation):
         # recordTransmitter = wfdb.rdrecord('samples/patient'+recordNumT+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
         ##recordReceiver = wfdb.rdrecord('samples/'+str(recordNumR), physical=False, sampfrom=sampleFrom, channel_names=['avf'])
         # recordReceiver = wfdb.rdrecord('samples/patient'+recordNumR+'/seg01', physical=False, sampfrom=0, channel_names=['V6-Raw'])
-        if(OPFKAProtocol(PacienteSender,PacienteReceiver,Limite = 1)):
+        IPIs_receiver = Le_IPI(0, 2, PacienteReceiver)
+        if(OPFKAProtocol2(IPIs_Sender, IPIs_receiver, Limite = 10)):
             countFAR = countFAR + 1
         else:
             count = count + 1
@@ -222,8 +225,7 @@ def OPFKAProtocol(PacienteSender, PacienteReceiver, Limite = 10):
         return False
 
 
-
-def OPFKAProtocol2(PacienteSender, PacienteReceiver, samplefrom, Limite=10):
+def OPFKAProtocol2(IPIs_Sender, IPIs_receiver, Limite=10):
     '''if(Paciente==13 or Paciente==74):
         continue'''
     #Limite = 10
@@ -237,7 +239,7 @@ def OPFKAProtocol2(PacienteSender, PacienteReceiver, samplefrom, Limite=10):
     while(IDr == IDs):
         IDr = str(random.randint(1, 150))
 
-    IPIs_Sender = Le_IPI(0, 2, PacienteSender)
+    # IPIs_Sender = Le_IPI(0, 2, PacienteSender)
     IPIs_Sender_Concatenados = []
     print(len(IPIs_Sender))
 
@@ -272,7 +274,7 @@ def OPFKAProtocol2(PacienteSender, PacienteReceiver, samplefrom, Limite=10):
     # receiver:
     # Receiver recebe IDs,IDr,Cofre e Nonce
     # Realizando leitura de IPIs e calculo de caracteristicas de receiver
-    IPIs_receiver = Le_IPI2(0, 2, PacienteReceiver, samplefrom)
+    # IPIs_receiver = Le_IPI(0, 2, PacienteReceiver)
     IPIs_Concatenados = []
     print(len(IPIs_receiver))
 
@@ -343,6 +345,5 @@ def OPFKAProtocol2(PacienteSender, PacienteReceiver, samplefrom, Limite=10):
     else:
         print("NAO ACORDO!, Limite abaixo")
         return False
-
 
 featStatistics()
