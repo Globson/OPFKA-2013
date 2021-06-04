@@ -135,14 +135,14 @@ def OPFKAProtocolTime(Paciente):
     while(IDr == IDs):
         IDr = str(random.randint(1, 150))
 
-
+    inicio = time.time()
     #Sender Gerando caracteristicas e criando cofre:
     IPIs_Sender = Le_IPI(0, 2, Paciente)
     IPIs_Sender_Concatenados = []
     print(len(IPIs_Sender))
     
     #Sender Gerando caracteristicas e criando cofre:
-    inicio = time.time()
+    
     # Concatenando 3 IPIs
     for i in range(0, 36, 3):
         Binario1 = Converter(IPIs_Sender[i])
@@ -182,12 +182,13 @@ def OPFKAProtocolTime(Paciente):
     # receiver:
     # Receiver recebe IDs,IDr,Cofre e Nonce
     # Realizando leitura de IPIs e calculo de caracteristicas de receiver
+    inicio = time.time()
     IPIs_receiver = Le_IPI(0, 2, Paciente)
     IPIs_Concatenados = []
     #print(len(IPIs_receiver))
 
   
-    inicio = time.time()
+    
     # Concatenando 3 ipis
     for i in range(0, 36, 3):
         Binario1 = Converter(IPIs_receiver[i])
